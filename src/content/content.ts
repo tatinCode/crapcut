@@ -3,7 +3,7 @@ import { State } from "../background/messaging";
 let observer: MutationObserver | null = null;
 
 function proxyURL(originalSrc: string): string {
-    return `https://wsrv.io/?url=${encodeURIComponent(originalSrc)}&q=35&w=480`;
+return `https://wsrv.io/?url=${encodeURIComponent(originalSrc)}&q=35&w=480`;
 }
 
 function downgradeImage(img: HTMLImageElement): void {
@@ -11,13 +11,19 @@ function downgradeImage(img: HTMLImageElement): void {
     if(!src || src.startsWith("data:") 
         || src.endsWith(".svg") || img.dataset.originalSrc){
 
-        return; // skip if no src or already a data/blob URL
-    }
+            return; // skip if no src or already a data/blob URL
+        }
 
     img.dataset.originalSrc = src;
     img.src = proxyURL(src);
     img.removeAttribute("srcset"); // remove srcset to prevent browser from loading higher res images
     img.removeAttribute("sizes"); // remove sizes to prevent browser from loading higher res images
+
+    img.onerror = () => {
+        // If the proxy fails, fallback to original src
+        img.onerror = null; // prevent infinite loop if original also fails
+            img.src = img.dataset.originalSrc || "";
+    };
 }
 
 //this downgrades all of the iamges on the webpage
@@ -97,10 +103,10 @@ function attachRevealListeners(img: HTMLImageElement): void {
 function hideImage(img: HTMLImageElement): void {
     const src= img.src;
     if(!src || src.startsWith("data:")
-       || src.endsWith(".svg") || img.dataset.originalSrc){
-           
-        return; // skip if no src or already a data/blob URL
-    }
+        || src.endsWith(".svg") || img.dataset.originalSrc){
+
+            return; // skip if no src or already a data/blob URL
+        }
 
     img.dataset.originalSrc = src;
     img.dataset.originalDisplay = img.style.display || "";
@@ -151,76 +157,76 @@ function applyDomOptimizations(state: State){
 
     //example tiny visible indicator for debugign
     const id = "__mode_badge";
-    let badge = document.getElementById(id);
+let badge = document.getElementById(id);
 
-    if(state.mode === "off"){
-        badge?.remove();
-        restoreImages();
-        return;
+if(state.mode === "off"){
+    badge?.remove();
+    restoreImages();
+    return;
+}
+
+if(state.mode !== "medium" && state.mode !== "high"){
+    restoreImages();
+}
+
+if(state.mode === "medium"){
+    downgradeImages();
+    document.querySelectorAll<HTMLImageElement>("img[data-original-src]")
+    .forEach(attachRevealListeners);
+    observeNewImages("medium");
+}
+
+if(state.mode === "high"){
+    hideImages();
+    observeNewImages("high");
+    document.querySelectorAll<HTMLImageElement>("img[data-original-src]")
+    .forEach(attachRevealListenersHidden);
+}
+
+
+if(!badge){
+    badge = document.createElement("div");
+    badge.id = id;
+    badge.style.position = "fixed";
+    badge.style.bottom = "12px";
+    badge.style.right = "12px";
+    badge.style.zIndex = "2147483647"; // max z-index to ensure it's on top
+    badge.style.padding = "6px 10px";
+    badge.style.borderRadius = "10px";
+    badge.style.font = "12px system-ui, sans-serif";
+    badge.style.background = "rgba(0,0,0,0.75)";
+    badge.style.color = "white";
+    badge.style.pointerEvents = "none"; // allow clicks to pass through
+
+    document.body.appendChild(badge);
+}
+
+const warningId = "__extreme_mode_warning";
+let warning = document.getElementById(warningId);
+
+if (state.mode === "extreme") {
+    if (!warning){
+        warning = document.createElement("div");
+        warning.id = warningId;
+        warning.textContent = "Extreme Mode Active — Media & Images Blocked";
+        warning.style.position = "fixed";
+        warning.style.top = "0";
+        warning.style.left = "0";
+        warning.style.right = "0";
+        warning.style.background = "red";
+        warning.style.color = "white";
+        warning.style.padding = "6px";
+        warning.style.fontSize = "12px";
+        warning.style.zIndex = "2147483647";
+        warning.style.textAlign = "center";
+        document.body?.appendChild(warning);
     }
-
-    if(state.mode !== "medium" && state.mode !== "high"){
-        restoreImages();
-    }
-
-    if(state.mode === "medium"){
-        downgradeImages();
-        document.querySelectorAll<HTMLImageElement>("img[data-original-src]")
-            .forEach(attachRevealListeners);
-        observeNewImages("medium");
-    }
-
-    if(state.mode === "high"){
-        hideImages();
-        observeNewImages("high");
-        document.querySelectorAll<HTMLImageElement>("img[data-original-src]")
-        .forEach(attachRevealListenersHidden);
-    }
+} else {
+    warning?.remove();
+}
 
 
-    if(!badge){
-        badge = document.createElement("div");
-        badge.id = id;
-        badge.style.position = "fixed";
-        badge.style.bottom = "12px";
-        badge.style.right = "12px";
-        badge.style.zIndex = "2147483647"; // max z-index to ensure it's on top
-        badge.style.padding = "6px 10px";
-        badge.style.borderRadius = "10px";
-        badge.style.font = "12px system-ui, sans-serif";
-        badge.style.background = "rgba(0,0,0,0.75)";
-        badge.style.color = "white";
-        badge.style.pointerEvents = "none"; // allow clicks to pass through
-
-        document.body.appendChild(badge);
-    }
-
-    const warningId = "__extreme_mode_warning";
-    let warning = document.getElementById(warningId);
-
-    if (state.mode === "extreme") {
-        if (!warning){
-            warning = document.createElement("div");
-            warning.id = warningId;
-            warning.textContent = "Extreme Mode Active — Media & Images Blocked";
-            warning.style.position = "fixed";
-            warning.style.top = "0";
-            warning.style.left = "0";
-            warning.style.right = "0";
-            warning.style.background = "red";
-            warning.style.color = "white";
-            warning.style.padding = "6px";
-            warning.style.fontSize = "12px";
-            warning.style.zIndex = "2147483647";
-            warning.style.textAlign = "center";
-            document.body?.appendChild(warning);
-        }
-    } else {
-        warning?.remove();
-    }
-
-
-    badge.textContent = `Mode: ${state.mode}`;
+badge.textContent = `Mode: ${state.mode}`;
 }
 
 chrome.runtime.onMessage.addListener((msg: any) => {
