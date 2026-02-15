@@ -1,0 +1,35 @@
+{
+    "manifest_version": 3,
+    "name": "crapcut",
+    "version": "0.1.0",
+    "description": "A chrome extension to speed up page loading",
+    "action":{
+        "default_title": "crapcut",
+        "default_popup": "src/popup/popup.html"
+    },
+    "background": {
+        "service_worker": "background/background.js",
+        "type": "module"
+    },
+    "content_scripts": [
+        {
+            "matches": ["<all_urls>"],
+            "js": ["content/content.js"],
+            "run_at": "document_idle"
+        }
+    ],
+    "permissions": [
+        "storage",
+        "tabs",
+        "scripting",
+        "declarativeNetRequest",
+        "declarativeNetRequestFeedback",
+        "alarms"
+    ],
+    "host_permissions": [
+        "<all_urls>"
+    ],
+    "declarative_net_request": {
+        "rule_resources": []
+    }
+}

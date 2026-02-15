@@ -1,0 +1,119 @@
+:root{
+    color-scheme: dark;
+}
+
+body{
+    margin: 0;
+    padding: 14px;
+    font-family: system-ui, sans-serif;
+    width: 280px;
+}
+
+.wrapper{
+    display: grid;
+    gap: 12px;
+}
+
+h1{
+    font-size: 16px;
+    margin: 0;
+}
+
+.current{
+    padding: 10px;
+    font-size: 13px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.buttons{
+    display: flex;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.buttons button{
+    flex: 1;
+    padding: 8px 4px;
+    border: none;
+    background: transparent;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 11px;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+}
+
+.buttons button:not(:last-child){
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.buttons button:hover{
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.buttons button.active{
+    background: rgba(255, 255, 255, 0.15);
+    color: white;
+    font-weight: 600;
+}
+
+.hint{
+    font-size: 12px;
+    opacity: 0.8;
+    margin: 0;
+}
+
+.stats{
+    padding: 10px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.08);
+    font-size: 13px;
+}
+
+.stats-main{
+    display: flex;
+    justify-content: space-between;
+}
+
+.stats-expand-btn{
+    width: 100%;
+    margin-top: 8px;
+    padding: 4px;
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 11px;
+    cursor: pointer;
+}
+
+.stats-expand-btn:hover{
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.stats-expanded{
+    padding-top: 8px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.05);
+    font-size: 12px;
+    display: grid;
+    gap: 6px;
+}
+
+.stats-expanded.hidden{
+    display: none;
+}
+
+.stats-row{
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.stats-label{
+    opacity: 0.6;
+    min-width: 60px;
+}
+
+
+

@@ -1,0 +1,47 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Popup</title>
+        <link rel="stylesheet" href="popup.css">
+    </head>
+    <body>
+        <div class="wrapper">
+            <h1>crapcut</h1>
+
+            <div id="current" class="current">Loading...</div>
+
+            <div class="buttons">
+                <button data-mode="off">Off</button>
+                <button data-mode="low">Low</button>
+                <button data-mode="medium">Medium</button>
+                <button data-mode="high">High</button>
+                <button data-mode="extreme">Extreme</button>
+            </div>
+
+            <div id="stats" class="stats">
+                <div class="stats-main">
+                    <span id="stats-blocked">0 requests Blocked</span>
+                    <span id="stats-saved">0 B Saved</span>
+                </div>
+                <button id="stats-toggle" class="stats-expand-btn">Show More</button>
+            </div>
+
+            <div id="stats-expanded" class="stats-expanded hidden">
+                <div class="stats-row">
+                    <span class="stats-label">Session:</span>
+                    <span id="session-blocked">0 Blocked</span>
+                    <span id="session-saved">0 B</span>
+                </div>
+                <div class="stats-row">
+                    <span class="stats-label">All time:</span>
+                    <span id="allTime-blocked">0 Blocked</span>
+                    <span id="allTime-saved">0 B</span>
+                </div>
+            </div>
+
+            <p class="hint">Tip: open any page and switch modes to see badge update.</p>
+        </div>
+        <script type="module" src="./popup.ts"></script>
+    </body>
+</html>
