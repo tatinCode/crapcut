@@ -3,7 +3,7 @@ import { State } from "../background/messaging";
 let observer: MutationObserver | null = null;
 
 function proxyURL(originalSrc: string): string {
-    return `https://wsrv.io/?url=${encodeURIComponent(originalSrc)}&q=15&w=180`;
+    return `https://wsrv.io/?url=${encodeURIComponent(originalSrc)}&q=35&w=480`;
 }
 
 function downgradeImage(img: HTMLImageElement): void {
@@ -31,15 +31,23 @@ function observeNewImages(mode: "medium" | "high"): void {
         for(const mutation of mutations){
             for(const node of mutation.addedNodes){
                 if(node instanceof HTMLImageElement){
-                    downgradeImage(node);
                     if(mode === "high"){
+                        hideImage(node);
+                        attachRevealListenersHidden(node);
+                    }
+                    else{
+                        downgradeImage(node);
                         attachRevealListeners(node);
                     }
                 }
                 if(node instanceof HTMLElement){
                     node.querySelectorAll<HTMLImageElement>("img").forEach((img) => {
-                        downgradeImage(img);
                         if(mode === "high"){
+                            hideImage(img);
+                            attachRevealListenersHidden(img);
+                        }
+                        else{
+                            downgradeImage(img);
                             attachRevealListeners(img);
                         }
                     });
@@ -61,6 +69,12 @@ function restoreImage(img: HTMLImageElement): void {
     if(originalSrc){
         img.src = originalSrc;
         delete img.dataset.originalSrc;
+        img.style.backgroundColor = "";
+        img.style.minHeight = "";
+        img.style.minWidth = "";
+        img.style.cursor = "";
+        img.style.display = img.dataset.originalDisplay || "";
+        delete img.dataset.originalDisplay;
     }
 }
 
@@ -77,6 +91,51 @@ function attachRevealListeners(img: HTMLImageElement): void {
     img.addEventListener("click", (e) => {
         e.preventDefault();
         restoreImage(img);
+    }, { once: true });
+}
+
+function hideImage(img: HTMLImageElement): void {
+    const src= img.src;
+    if(!src || src.startsWith("data:")
+       || src.endsWith(".svg") || img.dataset.originalSrc){
+           
+        return; // skip if no src or already a data/blob URL
+    }
+
+    img.dataset.originalSrc = src;
+    img.dataset.originalDisplay = img.style.display || "";
+    img.removeAttribute("srcset"); // remove srcset to prevent browser from loading higher res images
+    img.removeAttribute("sizes"); // remove sizes to prevent browser from loading higher res images
+    img.src = "";
+    img.style.backgroundColor = "#d0d0d0"; // placeholder background
+    img.style.minHeight = "60px"; // prevent layout collapse
+    img.style.minWidth = "60px"; // prevent layout collapse
+    img.style.cursor = "default"; // indicate interactivity
+}
+
+function hideImages(): void{
+    document.querySelectorAll<HTMLImageElement>("img").forEach(hideImage);
+}
+
+function revealImage(img: HTMLImageElement): void {
+    const originalSrc = img.dataset.originalSrc;
+    if(originalSrc){
+        img.src = originalSrc;
+        delete img.dataset.originalSrc;
+        img.style.backgroundColor = "";
+        img.style.minHeight = "";
+        img.style.minWidth = "";
+        img.style.cursor = "";
+        img.style.display = img.dataset.originalDisplay || "";
+        delete img.dataset.originalDisplay;
+    }
+}
+
+function attachRevealListenersHidden(img: HTMLImageElement): void {
+    img.addEventListener("mouseenter", () => revealImage(img), { once: true });
+    img.addEventListener("click", (e) => {
+        e.preventDefault();
+        revealImage(img);
     }, { once: true });
 }
 
@@ -106,22 +165,16 @@ function applyDomOptimizations(state: State){
 
     if(state.mode === "medium"){
         downgradeImages();
+        document.querySelectorAll<HTMLImageElement>("img[data-original-src]")
+            .forEach(attachRevealListeners);
         observeNewImages("medium");
-        if(document.readyState === "complete"){
-            setTimeout(restoreImages, 1500);
-        }
-        else{
-            window.addEventListener("load", () => {
-                setTimeout(restoreImages, 1500); 
-            }, { once: true });
-        }
     }
 
     if(state.mode === "high"){
-        downgradeImages();
+        hideImages();
         observeNewImages("high");
         document.querySelectorAll<HTMLImageElement>("img[data-original-src]")
-        .forEach(attachRevealListeners);
+        .forEach(attachRevealListenersHidden);
     }
 
 

@@ -13,44 +13,54 @@ async function broadcastToTab(tabId: number){
 
 chrome.runtime.onMessage.addListener((msg: Msg, _sender, sendResponse) => {
     (async () => {
-        if (msg.type === "GET_STATE") {
-            const state = ({ok: true, state: await getState()});
-            sendResponse(state);
-        }
-        else if(msg.type === "SET_MODE"){
-            const state = await setMode(msg.mode);
-
-            //removes all previously applied rules to avoid conflicts
-            await applyRulesForMode(msg.mode);
-
-            const [tab] = await chrome.tabs.query({ 
-                active: true, 
-                currentWindow: true 
-            });
-            if(tab?.id){
-                await broadcastToTab(tab.id);
+        try{
+            if (msg.type === "GET_STATE") {
+                const state = ({ok: true, state: await getState()});
+                sendResponse(state);
             }
+            else if(msg.type === "SET_MODE"){
+                const currentState = await getState();
 
-            sendResponse({ok: true, state});
-        
-        }
-        else if(msg.type === "APPLY_TO_TAB"){
-            await broadcastToTab(msg.tabId);
-            sendResponse({ok: true});
-        }
-        else if(msg.type === "GET_STATS"){
-            const tabStats = msg.tabId ? await getTabStats(msg.tabId) :
-                { blockedRequests: 0, estimatedBytesSaved: 0 };
-            const sessionStats = await getSessionStats();
-            const allTimeStats = await getAllTimeStats();
+                //removes all previously applied rules to avoid conflicts
+                if(currentState.mode === msg.mode){
+                    sendResponse({ok: true, state: currentState});
+                    return;
+                }
 
-            sendResponse({
-                ok: true, 
-                stats: { currentTab: tabStats, session: sessionStats, allTime: allTimeStats }
-            });
-        }
-        else{
-            sendResponse({ok: false, error: "Unknown message type"});
+                const state = await setMode(msg.mode);
+
+                await applyRulesForMode(msg.mode);
+
+                const [tab] = await chrome.tabs.query({ 
+                    active: true, 
+                    currentWindow: true 
+                });
+                if(tab?.id){
+                    await broadcastToTab(tab.id);
+                }
+
+                sendResponse({ok: true, state});
+            }
+            else if(msg.type === "APPLY_TO_TAB"){
+                await broadcastToTab(msg.tabId);
+                sendResponse({ok: true});
+            }
+            else if(msg.type === "GET_STATS"){
+                const tabStats = msg.tabId ? await getTabStats(msg.tabId) :
+                    { blockedRequests: 0, estimatedBytesSaved: 0 };
+                const sessionStats = await getSessionStats();
+                const allTimeStats = await getAllTimeStats();
+
+                sendResponse({
+                    ok: true, 
+                    stats: { currentTab: tabStats, session: sessionStats, allTime: allTimeStats }
+                });
+            }
+            else{
+                sendResponse({ok: false, error: "Unknown message type"});
+            }
+        } catch (e) {
+            sendResponse({ok: false, error: String(e)});
         }
     })();
     return true;
