@@ -19,9 +19,11 @@ A Chrome extension that saves data and speeds up browsing by giving you control 
       ```
 
 3. Install dependencies and build:
+   ```
     npm install && npm run build
+   ```
 
-4. Open `chrome://extensions`, enable **Developer Mode**, click **Load unpacked**, and select the `dist/` folder.
+5. Open `chrome://extensions`, enable **Developer Mode**, click **Load unpacked**, and select the `dist/` folder.
 
 
  Tech Stack
