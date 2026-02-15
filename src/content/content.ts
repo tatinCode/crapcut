@@ -1,9 +1,50 @@
 import { State } from "../background/messaging";
 
 let observer: MutationObserver | null = null;
+let imageObserver: IntersectionObserver | null = null;
 
 function proxyURL(originalSrc: string): string {
 return `https://wsrv.io/?url=${encodeURIComponent(originalSrc)}&q=35&w=480`;
+}
+
+function setupImageObserver(): void {
+    imageObserver?.disconnect();
+    
+    imageObserver = new IntersectionObserver((entries) => {
+        for(const entry of entries){
+            if(entry.isIntersecting){
+                const img = entry.target as HTMLImageElement;
+
+                //load the compressed version now
+                loadCompressedImage(img);
+                
+                //stop observing now
+                imageObserver?.unobserve(img);
+            }
+        }
+    }, {
+        rootMargin: "50px", // start loading a bit before it comes into view
+        threshold: 0.01 // trigger when even a tiny part is visible
+    });
+}
+
+function loadCompressedImage(img: HTMLImageElement): void {
+    const originalSrc = img.dataset.originalSrc;
+    if(!originalSrc){
+        return;
+    }
+
+    img.src = proxyURL(originalSrc);
+    img.removeAttribute("srcset");
+    img.removeAttribute("sizes");
+    img.style.backgroundColor = "";
+    img.style.minHeight = "";
+
+    img.onerror = () => {
+        // If the proxy fails, fallback to original src
+        img.onerror = null; // prevent infinite loop if original also fails
+            img.src = img.dataset.originalSrc || "";
+    };
 }
 
 function downgradeImage(img: HTMLImageElement): void {
@@ -15,15 +56,11 @@ function downgradeImage(img: HTMLImageElement): void {
         }
 
     img.dataset.originalSrc = src;
-    img.src = proxyURL(src);
-    img.removeAttribute("srcset"); // remove srcset to prevent browser from loading higher res images
-    img.removeAttribute("sizes"); // remove sizes to prevent browser from loading higher res images
+    img.src = "";
+    img.style.backgroundColor = "#e0e0e0"; // placeholder background
+    img.style.minHeight = "100px";
 
-    img.onerror = () => {
-        // If the proxy fails, fallback to original src
-        img.onerror = null; // prevent infinite loop if original also fails
-            img.src = img.dataset.originalSrc || "";
-    };
+    imageObserver?.observe(img);
 }
 
 //this downgrades all of the iamges on the webpage
@@ -157,23 +194,24 @@ function applyDomOptimizations(state: State){
 
     //example tiny visible indicator for debugign
     const id = "__mode_badge";
-let badge = document.getElementById(id);
+    let badge = document.getElementById(id);
 
-if(state.mode === "off"){
-    badge?.remove();
-    restoreImages();
-    return;
-}
+    if(state.mode === "off"){
+        badge?.remove();
+        restoreImages();
+        return;
+    }
 
-if(state.mode !== "medium" && state.mode !== "high"){
-    restoreImages();
-}
+    if(state.mode !== "medium" && state.mode !== "high"){
+        restoreImages();
+    }
 
-if(state.mode === "medium"){
-    downgradeImages();
-    document.querySelectorAll<HTMLImageElement>("img[data-original-src]")
-    .forEach(attachRevealListeners);
-    observeNewImages("medium");
+    if(state.mode === "medium"){
+        setupImageObserver();
+        downgradeImages();
+        document.querySelectorAll<HTMLImageElement>("img[data-original-src]")
+        .forEach(attachRevealListeners);
+        observeNewImages("medium");
 }
 
 if(state.mode === "high"){
