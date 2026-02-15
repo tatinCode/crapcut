@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>crapcut - Save data. Speed up browsing.</title>
+    <link rel="stylesheet" href="crapcut.css">
+</head>
+<body>
+    <div class="container">
+
+        <!-- Hero -->
+        <div class="hero">
+            <h1>crapcut</h1>
+            <p class="tagline">Save data. Speed up browsing. Take control.</p>
+            <div class="hero-buttons">
+                <a href="https://github.com/tatinCode/crapcut" class="btn btn-primary">View on GitHub</a>
+                <a href="#install" class="btn btn-secondary">Install</a>
+            </div>
+        </div>
+
+        <!-- Modes -->
+        <section>
+            <h2>Five levels of control</h2>
+            <div class="modes">
+                <div class="mode-card off">
+                    <span class="mode-name">Off</span>
+                    <span class="mode-desc">Default browsing. No interference.</span>
+                </div>
+                <div class="mode-card low">
+                    <span class="mode-name">Low</span>
+                    <span class="mode-desc">Blocks ads and trackers using EasyList filter rules.</span>
+                </div>
+                <div class="mode-card medium">
+                    <span class="mode-name">Medium</span>
+                    <span class="mode-desc">Low + replaces images with compressed versions. Hover to reveal originals.</span>
+                </div>
+                <div class="mode-card high">
+                    <span class="mode-name">High</span>
+                    <span class="mode-desc">Low + hides all images with placeholders. Hover to reveal originals.</span>
+                </div>
+                <div class="mode-card extreme">
+                    <span class="mode-name">Extreme</span>
+                    <span class="mode-desc">Low + blocks all images, media, and fonts at the network level.</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Install -->
+        <section id="install">
+            <h2>Get started</h2>
+            <div class="steps">
+                <div class="step">
+                    <span class="step-num">1</span>
+                    <div class="step-content">
+                        Clone the repository
+                        <code>git clone https://github.com/tatinCode/crapcut.git</code>
+                    </div>
+                </div>
+                <div class="step">
+                    <span class="step-num">2</span>
+                    <div class="step-content">
+                        Install dependencies and build
+                        <code>npm install && npm run build</code>
+                    </div>
+                </div>
+                <div class="step">
+                    <span class="step-num">3</span>
+                    <div class="step-content">
+                        Open <code>chrome://extensions</code>, enable Developer Mode, click "Load unpacked", and select the <code>dist/</code> folder.
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer>
+            <p>Built for SF Hacks 2026 &middot; <a href="https://github.com/tatinCode/crapcut">GitHub</a></p>
+        </footer>
+
+    </div>
+</body>
+</html>
